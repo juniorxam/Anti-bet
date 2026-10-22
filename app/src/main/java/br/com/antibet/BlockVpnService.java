@@ -39,7 +39,7 @@ public class BlockVpnService extends VpnService {
             "casino.com", "888casino.com", "blaze.com", "stake.com",
             "betway.com", "1xbet.com", "vaidebet.com", "galerabet.com",
             "realsbet.com", "mrjack.bet", "esportesdasorte.com",
-            "oddsandmore.com", "bet7k.com", "bet da sorte.com"
+            "oddsandmore.com", "bet7k.com"
     ));
 
     private ParcelFileDescriptor tunnel;
@@ -54,7 +54,7 @@ public class BlockVpnService extends VpnService {
             try {
                 tunnel = new Builder()
                         .setSession("AntiBet DNS")
-                        .addAddress("10.77.0.1", 32)
+                        .addAddress("10.77.0.1", 30)
                         .addDnsServer(DNS_IP)
                         .addRoute(DNS_IP, 32)
                         .setMtu(1500)
