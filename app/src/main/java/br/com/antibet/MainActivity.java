@@ -3,6 +3,7 @@ package br.com.antibet;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.VpnService;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.ViewGroup;
@@ -60,8 +61,11 @@ public class MainActivity extends Activity {
         start.setText("Ativar proteção");
         start.setOnClickListener(v -> {
             Intent prepare = VpnService.prepare(this);
-            if (prepare != null) startActivityForResult(prepare, VPN_REQUEST);
-            else onActivityResult(VPN_REQUEST, RESULT_OK, null);
+            if (prepare != null) {
+                startActivityForResult(prepare, VPN_REQUEST);
+            } else {
+                startProtectionService();
+            }
         });
         root.addView(start, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -79,7 +83,7 @@ public class MainActivity extends Activity {
         root.addView(stop, bp);
 
         TextView info = new TextView(this);
-        info.setText("O AntiBet é experimental. Ele não consegue bloquear todos os anúncios, especialmente os exibidos dentro de vídeos e redes sociais. A VPN local é usada apenas para filtrar DNS.");
+        info.setText("O AntiBet filtra alguns domínios conhecidos de apostas pelo DNS. É experimental: anúncios embutidos em vídeos e redes sociais, conexões por DNS criptografado e domínios ainda não listados podem passar. Ao ativar, o Android exibirá a autorização de VPN local.");
         info.setTextSize(14);
         info.setTextColor(0xFF475569);
         LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(
@@ -90,13 +94,22 @@ public class MainActivity extends Activity {
         setContentView(root);
     }
 
+    private void startProtectionService() {
+        Intent service = new Intent(this, BlockVpnService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(service);
+        else startService(service);
+        status.setText("Proteção iniciando");
+        status.setTextColor(0xFF067647);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == VPN_REQUEST && resultCode == RESULT_OK) {
-            startService(new Intent(this, BlockVpnService.class));
-            status.setText("Proteção solicitada");
-            status.setTextColor(0xFF067647);
+            startProtectionService();
+        } else if (requestCode == VPN_REQUEST) {
+            status.setText("Autorização não concedida");
+            status.setTextColor(0xFFB42318);
         }
     }
 }
